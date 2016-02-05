@@ -455,7 +455,6 @@ process.tpTreeSta = process.tpTree.clone(
         LowPtTriggerFlagsPhysics,
         LowPtTriggerFlagsEfficienciesProbe,
         outerValidHits = cms.string("outerTrack.numberOfValidHits > 0"),
-        Mu5_L2Mu3_Jpsi_L2 = LowPtTriggerFlagsEfficienciesProbe.Mu5_L2Mu3_Jpsi_L2,
         TM  = cms.string("isTrackerMuon"),
         Glb = cms.string("isGlobalMuon"),
         Tk  = cms.string("track.isNonnull"),
