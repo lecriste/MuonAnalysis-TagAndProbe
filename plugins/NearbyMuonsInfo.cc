@@ -105,6 +105,7 @@ NearbyMuonsInfo::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 	//// Start DCA Calculation //////
 	reco::TrackRef tk = mu1->get<reco::TrackRef>();
 	reco::TrackRef tk2nd = mu2->get<reco::TrackRef>();
+	if (tk.isNull() || tk2nd.isNull()) continue ;
 	reco::TransientTrack transMu1(*tk, &(*theMF) );
 	reco::TransientTrack transMu2(*tk2nd, &(*theMF) );
 	TrajectoryStateClosestToPoint mu1TS = transMu1.impactPointTSCP();
