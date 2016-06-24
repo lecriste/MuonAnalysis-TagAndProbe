@@ -7,12 +7,12 @@ process = cms.Process("TagProbe")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -113,6 +113,7 @@ process.triggerResultsFilter.throw = True
 process.triggerResultsFilter.hltResults = cms.InputTag( "TriggerResults", "", "HLT" )
 process.HLTMu   = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*' ])
 process.HLTBoth = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*' ])
+process.HLTBoth_withDimuon = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*', 'HLT_Mu*', 'HLT_Dimuon*', 'HLT_Mu*_TkMu*' ])
 
 process.fastFilter = cms.Sequence(process.goodVertexFilter + process.noScraping)
 ## ==== Merge CaloMuons and Tracks into the collection of reco::Muons  ====
@@ -144,7 +145,7 @@ process.load("MuonAnalysis.TagAndProbe.common_modules_cff")
 
 process.tagMuons = cms.EDFilter("PATMuonSelector",
     src = cms.InputTag("patMuonsWithTrigger"),
-    cut = cms.string("(isGlobalMuon || numberOfMatchedStations > 1) && pt > 5 && !triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"),
+    cut = cms.string("(isGlobalMuon || numberOfMatchedStations > 1) && pt > 7.5 && !triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"),
 )
 
 process.oneTag  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("tagMuons"), minNumber = cms.uint32(1))
@@ -185,9 +186,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
        Acc_JPsi = cms.string("(abs(eta) <= 1.3 && pt > 3.3) || (1.3 < abs(eta) <= 2.2 && p > 2.9) || (2.2 < abs(eta) <= 2.4  && pt > 0.8)"),
     ),
     tagVariables = cms.PSet(
-        pt  = cms.string('pt'),
-        eta = cms.string('eta'),
-        phi = cms.string('phi'),
+        KinematicVariables, 
         nVertices = cms.InputTag("nverticesModule"),
         l1rate = cms.InputTag("l1rate"),
         bx     = cms.InputTag("l1rate","bx"),
@@ -214,6 +213,7 @@ process.tpTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     pairFlags = cms.PSet(),
     isMC           = cms.bool(False),
     addRunLumiInfo = cms.bool(True),
+    #allProbes = cms.InputTag("probeMuons"), # was missing
 )
 
 
@@ -242,6 +242,47 @@ process.tagAndProbe = cms.Path(
     process.patMuonsWithTriggerSequence *
     process.tnpSimpleSequence
 )
+
+# OnePair tree for vertexing filter efficiency
+process.tpTreeOnePair = process.tpTree.clone(
+   arbitration   = "OnePair",
+   # a few L1,L2,L3 variables in Ilse's file
+   pairVariables = cms.PSet(
+        process.tpTree.pairVariables,
+        rapidity      = cms.string("rapidity"),
+        absrapidity   = cms.string("abs(rapidity)"),
+        #prescaled     = cms.InputTag("tagProbeSeparation", "prescaled"),
+        #VtxProb       = cms.InputTag("tagProbeSeparation", "VtxProb"),
+        #VtxCosPA      = cms.InputTag("tagProbeSeparation", "VtxCosPA"),
+        #VtxLxy        = cms.InputTag("tagProbeSeparation", "VtxLxy"),
+        #VtxLxySig     = cms.InputTag("tagProbeSeparation", "VtxLxySig"),
+        #VtxL3d        = cms.InputTag("tagProbeSeparation", "VtxL3d"),
+        DCA           = cms.InputTag("tagProbeSeparation", "DCA"),
+        ),
+)
+
+process.tnpSimpleSequenceOnePair = cms.Sequence(
+    process.tagMuons *
+    process.probeMuons *
+    process.tpPairs    *
+    process.muonDxyPVdzmin *
+    process.nverticesModule    *
+    process.tagProbeSeparation *
+    process.computeCorrectedIso *
+    process.probeMultiplicity * 
+    process.splitTrackTagger * 
+    process.l1rate *
+    process.tpTreeOnePair
+)
+
+process.tagAndProbeOnePair = cms.Path( 
+    process.fastFilter *
+    process.HLTBoth_withDimuon    *
+    process.mergedMuons                 *
+    process.patMuonsWithTriggerSequence *
+    process.tnpSimpleSequenceOnePair
+)
+
 
 ##    _____               _    _             
 ##   |_   _| __ __ _  ___| | _(_)_ __   __ _ 
@@ -287,15 +328,15 @@ process.tpTreeSta = process.tpTree.clone(
         tk_deltaEta_NoBestJPsi   = cms.InputTag("staToTkMatchNoBestJPsi","deltaEta"),
     ),
     flags = cms.PSet(
+        LowPtTriggerFlagsPhysics,
+        LowPtTriggerFlagsEfficienciesProbe,
         outerValidHits = cms.string("outerTrack.numberOfValidHits > 0"),
-        Mu5_L2Mu3_Jpsi_L2 = LowPtTriggerFlagsEfficienciesProbe.Mu5_L2Mu3_Jpsi_L2,
         TM  = cms.string("isTrackerMuon"),
         Glb = cms.string("isGlobalMuon"),
+        Tk  = cms.string("track.isNonnull"),
     ),
     tagVariables = cms.PSet(
-        pt = cms.string("pt"),
-        eta = cms.string("eta"),
-        phi = cms.string("phi"),
+        KinematicVariables, 
         nVertices = cms.InputTag("nverticesModule"),
         combRelIso = cms.string("(isolationR03.emEt + isolationR03.hadEt + isolationR03.sumPt)/pt"),
         chargedHadIso04 = cms.string("pfIsolationR04().sumChargedHadronPt"),
@@ -304,10 +345,27 @@ process.tpTreeSta = process.tpTree.clone(
         combRelIsoPF04dBeta = IsolationVariables.combRelIsoPF04dBeta,
     ),
     tagFlags = cms.PSet(
-        Mu5_L2Mu3_Jpsi_MU = LowPtTriggerFlagsEfficienciesTag.Mu5_L2Mu3_Jpsi_MU,
+        LowPtTriggerFlagsEfficienciesTag,
     ),
-    pairVariables = cms.PSet(),
+    pairVariables = cms.PSet(
+        dz      = cms.string("daughter(0).vz - daughter(1).vz"),
+        pt      = cms.string("pt"), 
+        #
+        dphiVtxTimesQ = cms.InputTag("tagProbeStaSeparation", "dphiVtxTimesQ"),
+        drM1          = cms.InputTag("tagProbeStaSeparation", "drM1"),
+        dphiM1        = cms.InputTag("tagProbeStaSeparation", "dphiM1"),
+        distM1        = cms.InputTag("tagProbeStaSeparation", "distM1"),
+        drM2          = cms.InputTag("tagProbeStaSeparation", "drM2"),
+        dphiM2        = cms.InputTag("tagProbeStaSeparation", "dphiM2"),
+        distM2        = cms.InputTag("tagProbeStaSeparation", "distM2"),
+        drVtx         = cms.InputTag("tagProbeStaSeparation", "drVtx"),
+        probeMultiplicity = cms.InputTag("probeStaMultiplicity"),        
+        #
+        DCA           = cms.InputTag("tagProbeStaSeparation", "DCA"),
+        deltaR   = cms.string("deltaR(daughter(0).eta, daughter(0).phi, daughter(1).eta, daughter(1).phi)"), 
+        ),
     pairFlags     = cms.PSet(),
+    #allProbes     = "probeMuonsSta", # was missing w.r.t. MC
 )
 
 process.tnpSimpleSequenceSta = cms.Sequence(
@@ -317,6 +375,8 @@ process.tnpSimpleSequenceSta = cms.Sequence(
     process.tpPairsSta      +
     process.onePairSta      +
     process.nverticesModule +
+    process.tagProbeStaSeparation +
+    process.probeStaMultiplicity +
     process.staToTkMatchSequenceJPsi +
     process.l1rate +
     process.tpTreeSta
@@ -436,6 +496,7 @@ if False: # turn on for tracking efficiency using L1 seeds
 process.schedule = cms.Schedule(
    process.tagAndProbe,
    process.tagAndProbeSta,
+   process.tagAndProbeOnePair,
    #process.tagAndProbeTkL1
 )
 
