@@ -348,6 +348,19 @@ LowPtTriggerFlagsPhysics = cms.PSet(
                                         + " && triggerObjectMatchesByCollection('hltL3MuonCandidates').at(0).hasFilterLabel('hltDisplacedmumuFilterDimuon8UpsilonBarrel')"),
     Dimuon0_Phi_Barrel = cms.string("!triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"
                                     + " && triggerObjectMatchesByCollection('hltL3MuonCandidates').at(0).hasFilterLabel('hltDisplacedmumuFilterDimuon0PhiBarrel')"),
+    # asked by Sara
+    DoubleMu4_3_Jpsi_Displaced_L1L2 = cms.string("!triggerObjectMatchesByCollection('hltL2MuonCandidates').empty()"
+				    + " && triggerObjectMatchesByCollection('hltL2MuonCandidates').at(0).hasFilterLabel('hltL2fL1sL1DoubleMu0er16IorDoubleMu0er16OSIorL1DoubleMu10MuOpenL1f0L2PreFiltered0')"),
+    DoubleMu4_3_Jpsi_Displaced = cms.string("!triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"
+				    + " && triggerObjectMatchesByCollection('hltL3MuonCandidates').at(0).hasFilterLabel('hltDoubleMu43JpsiDisplacedL3Filtered')"),
+    DoubleMu4_3_Bs_L1L2 = cms.string("!triggerObjectMatchesByCollection('hltL2MuonCandidates').empty()"
+                                    + " && triggerObjectMatchesByCollection('hltL2MuonCandidates').at(0).hasFilterLabel('hltL2fL1sL1DoubleMu0er16IorDoubleMu0er16OSIorL1DoubleMu10MuOpenL1f0L2PreFiltered0')"),
+    DoubleMu4_3_Bs = cms.string("!triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"
+                                    + " && triggerObjectMatchesByCollection('hltL3MuonCandidates').at(0).hasFilterLabel('hltDoubleMu4BsL3Filtered')"),
+    DoubleMu4_PsiPrimeTrk_Displaced_L1L2 = cms.string("!triggerObjectMatchesByCollection('hltL2MuonCandidates').empty()"
+                                    + " && triggerObjectMatchesByCollection('hltL2MuonCandidates').at(0).hasFilterLabel('hltL2fL1sL1DoubleMu0er16IorDoubleMu0er16OSIorL1DoubleMu10MuOpenL1f0L2PreFiltered0')"),
+    DoubleMu4_PsiPrimeTrk_Displaced = cms.string("!triggerObjectMatchesByCollection('hltL3MuonCandidates').empty()"
+                                    + " && triggerObjectMatchesByCollection('hltL3MuonCandidates').at(0).hasFilterLabel('hltDoubleMu4PsiPrimeDisplacedL3Filtered')"),
     )
 
 LowPtTriggerFlagsEfficienciesTag = cms.PSet(

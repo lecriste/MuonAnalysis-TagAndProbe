@@ -5,7 +5,9 @@ Mu8 = False
 #Mu8 = True
 
 RunB = True
-#RunB = False
+RunB = False
+RunC = True
+#RunC = False
 RunDv3 = True
 RunDv3 = False
 RunDv4 = True
@@ -24,9 +26,13 @@ if MC:
 else:
 	if (RunB):
 		#config.General.requestName = 'TnP_RunB_80X'
-                config.General.requestName = 'TnP_RunB_80X_correctTreeSta'
+                #config.General.requestName = 'TnP_RunB_80X_correctTreeSta'
+		#config.General.requestName = 'TnP_RunB_80X_271036-275125'
+                config.General.requestName = 'TnP_RunB_80X_271036-275376'
 		if Mu8:
 			config.General.requestName = 'TnP_RunB_Mu8'
+        elif (RunC):
+                config.General.requestName = 'TnP_RunC_80X_275377-276097'
 	elif (RunDv3):
 		#config.General.requestName = 'TnP_RunDv3'
 		#config.General.requestName = 'TnP_RunDv3_noPairVtxInfo'
@@ -64,6 +70,10 @@ else:
 		config.Data.inputDataset = '/Charmonium/Run2016B-PromptReco-v2/AOD'
 		if Mu8:
 			config.Data.inputDataset = '/DoubleMuon/Run2015C_25ns-05Oct2015-v1/AOD'
+        elif (RunC):
+                config.Data.inputDataset = '/Charmonium/Run2016C-PromptReco-v2/AOD'
+                if Mu8:
+                        config.Data.inputDataset = '/DoubleMuon/Run2015C_25ns-05Oct2015-v1/AOD'
 	elif (RunDv3):
 		config.Data.inputDataset = '/Charmonium/Run2015D-PromptReco-v3/AOD'
 		if Mu8:
@@ -79,15 +89,19 @@ config.Data.splitting = 'LumiBased'
 if MC:
 	config.Data.unitsPerJob = 37 # for full official MC
 else:
-	config.Data.unitsPerJob = 18
-	if (RunDv3):
+        if (RunB):
+		#config.Data.unitsPerJob = 18 # Run2016B
+        	config.Data.unitsPerJob = 6 # min for Run2016B
+        elif (RunC):
+                config.Data.unitsPerJob = 15 # min for Run2016B
+	elif (RunDv3):
 		config.Data.unitsPerJob = 2
 	elif (RunDv4):
 		config.Data.unitsPerJob = 3
 	# JSON
-	config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt' # 2.6/fb Golden
+	#config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt' # 2.6/fb Golden
         #config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt' # 3.99/fb Golden
-
+        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-276097_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt' # 7.65/fb Golden
 config.Data.publication = False
 #config.Data.outLFNDirBase = '/store/user/lecriste/TnP/'
 config.Data.outLFNDirBase = '/store/group/phys_muon/lecriste/TnP/' # for CERN

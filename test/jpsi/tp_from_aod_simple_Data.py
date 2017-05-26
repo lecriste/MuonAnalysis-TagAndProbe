@@ -12,7 +12,9 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(),
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )    
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) 
+					#, skipEvents = cms.untracked.uint32( 1 )
+)    
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
@@ -112,8 +114,8 @@ process.triggerResultsFilter.l1tResults = ''
 process.triggerResultsFilter.throw = True
 process.triggerResultsFilter.hltResults = cms.InputTag( "TriggerResults", "", "HLT" )
 process.HLTMu   = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*' ])
-process.HLTBoth = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*' ])
-process.HLTBoth_withDimuon = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*', 'HLT_Mu*', 'HLT_Dimuon*', 'HLT_Mu*_TkMu*' ])
+process.HLTBoth = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*', 'HLT_DoubleMu*' ])
+process.HLTBoth_withDimuon = process.triggerResultsFilter.clone(triggerConditions = [ 'HLT_Mu*_L2Mu*', 'HLT_Mu*_Track*_Jpsi*', 'HLT_Mu*', 'HLT_Dimuon*', 'HLT_DoubleMu*', 'HLT_Mu*_TkMu*' ])
 
 process.fastFilter = cms.Sequence(process.goodVertexFilter + process.noScraping)
 ## ==== Merge CaloMuons and Tracks into the collection of reco::Muons  ====
